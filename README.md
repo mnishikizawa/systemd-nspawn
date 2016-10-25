@@ -1,1 +1,3 @@
 - ansible-playbook -i hosts container.yml --ask-vault-pass
+- machinectl -p Leader show mycontainer
+- nsenter -m -u -i -n -p -t $(out put of above command)
