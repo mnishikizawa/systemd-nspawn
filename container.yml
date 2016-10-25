@@ -1,0 +1,40 @@
+---
+- hosts: default
+  become: yes
+  become_method: sudo
+  become_user: root
+  vars:
+    container_name: mycontainer
+    bridge_ifname: br0
+  vars_files:
+    - vars/secret.yml
+
+  tasks:
+   - name: create container root directory
+     file:
+       path: /var/lib/container
+       state: directory
+       owner: root
+       mode: 0755
+
+   - name: install centos release
+     shell: yum -y --nogpg --releasever=7 --installroot=/var/lib/container/{{ container_name }} --disablerepo='*' --enablerepo=base install centos-release
+
+   - name: group install minimal
+     shell: yum --installroot=/var/lib/container/{{ container_name }} groups install -y -q 'Minimal Install'
+
+   - name: change {{ container_root }} root password
+     shell: echo "root:{{ root_password }}" | chroot /var/lib/container/{{ container_name }}/ /usr/sbin/chpasswd
+
+   - name: copy systemd startup file
+     template:
+       src: templates/container.service
+       dest: /etc/systemd/system/{{ container_name }}.service
+       owner: root
+       mode: 0644
+
+   - name: reload systemd daemon
+     shell: systemctl daemon-reload
+
+   - name: start container {{ container_name }}
+     shell: systemctl start {{ container_name }}
