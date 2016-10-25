@@ -23,7 +23,7 @@
    - name: group install minimal
      shell: yum --installroot=/var/lib/container/{{ container_name }} groups install -y -q 'Minimal Install'
 
-   - name: change {{ container_root }} root password
+   - name: change {{ container_name }} root password
      shell: echo "root:{{ root_password }}" | chroot /var/lib/container/{{ container_name }}/ /usr/sbin/chpasswd
 
    - name: copy systemd startup file
